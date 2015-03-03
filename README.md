@@ -55,10 +55,10 @@ Arguments:
 
 | Arguments      | Explanation |
 |----------------|-------------|
-| <process_name> | The name of the online monitor page. The resulting HTML file will be a cleaned (url-friendly) version of this name. |
-| <jobs_file>    | The output directory for the monitor html and components. Ideally, this would be in a public location, such as a pub_html directory. |
-| <events_file>  | A csv file (.csv) containing two columns, with headers ID and NAME. I column of unique job identifiers. In most cases, there would be a single job for each scan/subject. ID is a short unique reference to the job, with no spaces. Name is a pretty version of the ID. |
-| <monitor_dir>  | A csv file (.csv) containing two columns, with headers ID and NAME. I column of unique event identifiers. ID is a short unique reference to the event with no spaces. Name is a pretty version of the ID. These can be as fine-grained as you would like (within or across scripts), but denote the separate steps each job goes through. |
+| process_name | The name of the online monitor page. The resulting HTML file will be a cleaned (url-friendly) version of this name. |
+| jobs_file    | The output directory for the monitor html and components. Ideally, this would be in a public location, such as a pub_html directory. |
+| events_file  | A csv file (.csv) containing two columns, with headers ID and NAME. I column of unique job identifiers. In most cases, there would be a single job for each scan/subject. ID is a short unique reference to the job, with no spaces. Name is a pretty version of the ID. |
+| monitor_dir  | A csv file (.csv) containing two columns, with headers ID and NAME. I column of unique event identifiers. ID is a short unique reference to the event with no spaces. Name is a pretty version of the ID. These can be as fine-grained as you would like (within or across scripts), but denote the separate steps each job goes through. |
 
 Options:
 
