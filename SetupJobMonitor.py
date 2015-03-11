@@ -320,7 +320,7 @@ Alternatively, you may be able to check for the existence of some output, as so:
             |                                                 |
             | path/to/statusupdate.py $subj step1 Running     |
             |                                                 |
-            | someprogram -option $subj arg1 arg2 ; then      |
+            | someprogram -option $subj arg1 arg2             |
             |                                                 |
             | if [[ -e someoutput ]] ; then                   |
             |   path/to/statusupdate.py $subj step1 Finished  |

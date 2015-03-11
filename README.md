@@ -49,7 +49,7 @@ Each Status can be "Inactive", "Running", "Finished", or "Error".
 
 ###Usage
 ```
-SetupJobMonitor.py [options] <process_name> <jobs_file> <events_file> <monitor_dir>
+SetupJobMonitor.py [options] <process_name> <monitor_dir> <jobs_file> <events_file>
 ```
 Arguments:
 
