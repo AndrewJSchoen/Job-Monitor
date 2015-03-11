@@ -1,5 +1,5 @@
 # Job Monitor
-###Version 1.1
+###Version 1.1.2
 
 Monitor the progress of your scripts in an HTML webpage.
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-#Version 1.0
+Version = "1.1.2"
 #Created by Andrew Schoen (schoen.andrewj@gmail.com)
 
-"""
+doc="""
 Online Job Monitor Setup.
 
 Usage:
@@ -242,7 +242,7 @@ def createReadme(monitorDir, jobs, events):
            | |_| | (_) | |_) | | |  | | (_) | | | | | || (_) | |   
             \___/ \___/|_.__/  |_|  |_|\___/|_| |_|_|\__\___/|_|  .py
                                                            
-              Version 1.1
+              Version {0}
               Written by Andrew Schoen (schoen.andrewj@gmail.com)
 
 The program you ran generated a webpage, some style sheets, some json files, and some scripts
@@ -329,7 +329,7 @@ Alternatively, you may be able to check for the existence of some output, as so:
             ---------------------------------------------------
 
 
-  """
+  """.format(Version)
   semicustom = """Now, let's consider your code specifically. The statuses you can update to are as follows:
 For brevity, the first job and event was selected for the template here, but this will change if you have multiple jobs.
 
@@ -413,7 +413,7 @@ def create(arguments):
 #============ DocOpt ========================================================
 
 def go(args):
-   arguments = docopt(__doc__, argv=args, version='Online Job Monitor Setup 1.1')
+   arguments = docopt(doc, argv=args, version='Online Job Monitor Setup {0}'.format(Version))
    arguments = cleanArguments(arguments)
    create(arguments)
 
