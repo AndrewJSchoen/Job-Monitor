@@ -6,7 +6,7 @@
 Online Job Monitor Setup.
 
 Usage:
-  SetupJobMonitor.py [options] <process_name> <jobs_file> <events_file> <monitor_dir>
+  SetupJobMonitor.py [options] <process_name> <monitor_dir> <jobs_file> <events_file>
 
 Arguments:
   <process_name>   The name of the online monitor page.
@@ -39,7 +39,7 @@ def writeCodeToFile(text, filename):
  with open(filename, 'w') as file:
     file.write(text)
     
-def writeRowToFile(text, filename):
+def writeTextToFile(text, filename):
  with open(filename, 'a') as file:
     file.write(text)
 
@@ -57,7 +57,7 @@ def cleanArguments(rawArguments):
       for event in eventrows:
         events.append(event)
   else:
-        print("CSV File '{0}' does not exist! Exiting now.".format(csvfilepath))
+        print("CSV File '{0}' does not exist! Exiting now.".format(rawArguments["<events_file>"]))
         sys.exit(0)
   #Parse Events file
   if os.path.exists(rawArguments["<jobs_file>"]):
@@ -66,7 +66,7 @@ def cleanArguments(rawArguments):
       for job in jobsrows:
         jobs.append(job)
   else:
-        print("CSV File '{0}' does not exist! Exiting now.".format(csvfilepath))
+        print("CSV File '{0}' does not exist! Exiting now.".format(rawArguments["<jobs_file>"]))
         sys.exit(0)
   arguments["monitorDir"] = rawArguments["<monitor_dir>"]
   arguments["processName"] = rawArguments["<process_name>"]
@@ -132,7 +132,7 @@ def writeHTML(arguments):
 <div class="table-responsive">
   <table class="table">  
 """.format(arguments["processName"])
-  writeRowToFile(top, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
+  writeTextToFile(top, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
   
   print("Printing Table Header to HTML")
   headercells = []
@@ -144,7 +144,7 @@ def writeHTML(arguments):
 {0}
     </tr>
   """.format(headercontent)
-  writeRowToFile(header, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
+  writeTextToFile(header, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
   
   print("Printing Job Rows to HTML")
   for job in arguments["jobs"]:
@@ -157,7 +157,7 @@ def writeHTML(arguments):
 {0}
     </tr>
   """.format(jobrow)
-    writeRowToFile(job, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
+    writeTextToFile(job, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
   
   print("Printing End to HTML")
   joblist = []
@@ -187,11 +187,11 @@ setInterval(function () {{
   for (row in rows) {{
     GetData(rows[row])
   }}
-}}, 1000)
+}}, 100)
 </script>
 </html>
 """.format(joblist)
-  writeRowToFile(footer, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
+  writeTextToFile(footer, "{0}/{1}.html".format(arguments["monitorDir"], cleanStringForFilename(arguments["processName"])))
 
 #============================================================================
 #============ Json File Creation ============================================
@@ -242,7 +242,7 @@ def createReadme(monitorDir, jobs, events):
            | |_| | (_) | |_) | | |  | | (_) | | | | | || (_) | |   
             \___/ \___/|_.__/  |_|  |_|\___/|_| |_|_|\__\___/|_|  .py
                                                            
-              Version 1.0
+              Version 1.1
               Written by Andrew Schoen (schoen.andrewj@gmail.com)
 
 The program you ran generated a webpage, some style sheets, some json files, and some scripts
@@ -356,59 +356,72 @@ The Events you can update are as follows, keeping Job and Status constant for br
   readmelist = [readmestandardheader, semicustom, fullcustom, readmestandardfooter]
   readme = "\n".join(readmelist)
   return readme
+  
+#============================================================================
+#============ Creation ======================================================
+
+def create(arguments):
+  print("Accepted Arguments:")
+  print(" Process Name: '{0}'".format(arguments["processName"]))
+  print(" Monitor Directory: '{0}'".format(arguments["monitorDir"]))
+  print(" Jobs:")
+  for job in arguments["jobs"]:
+    print("  {0} > {1}".format(job["ID"], job["NAME"]))
+  print(" Events:")
+  for event in arguments["events"]:
+    print("  {0} > {1}".format(event["ID"], event["NAME"]))
+  print
+  
+  #Remove Previous Versions
+  print("Checking for previous versions; handling the Monitor Directory.")
+  cleanSlate(arguments["monitorDir"])
+  print
+  
+  #Standard CSS and JS file creation
+  print("Defining Static CSS and Javascript")
+  staticFiles = defineStaticFiles()
+  print("Writing Static CSS and Javascript")
+  writeCodeToFile(staticFiles["css"], "{0}/monitor.css".format(arguments["monitorDir"]))
+  writeCodeToFile(staticFiles["jquery"], "{0}/jquery.js".format(arguments["monitorDir"]))
+  print
+  
+  #HTML File Creation
+  cleanStringForFilename(arguments["processName"])
+  writeHTML(arguments)
+  print
+  
+  #Json File Creation
+  print("Creating Initial Json Files")
+  for job in arguments["jobs"]:
+    createJson(arguments["monitorDir"], job, arguments["events"])
+  print
+  
+  #Updater Script Creation. 
+  #This fires every time a job has an update for one of its events. See the updaterReadme.txt for more details.
+  writeCodeToFile(getStatusUpdater(arguments["monitorDir"]), "{0}/statusupdate.py".format(arguments["monitorDir"]))
+  os.chmod("{0}/statusupdate.py".format(arguments["monitorDir"]), os.stat("{0}/statusupdate.py".format(arguments["monitorDir"])).st_mode | 0111)
+  
+  #Readme Creation.
+  print("Creating a custom README for your project")
+  readme = createReadme(arguments["monitorDir"], arguments["jobs"], arguments["events"])
+  writeCodeToFile(readme, "{0}/customreadme.txt".format(arguments["monitorDir"]))
+  print("A custom README has been written to {0}/customreadme.txt".format(arguments["monitorDir"]))
+  print
+
 
 #============================================================================
-#============ Main Loop =====================================================
+#============ DocOpt ========================================================
+
+def go(args):
+   arguments = docopt(__doc__, argv=args, version='Online Job Monitor Setup 1.1')
+   arguments = cleanArguments(arguments)
+   create(arguments)
+
+#============================================================================
+#============ Main ==========================================================
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='Online Job Monitor Setup 1.0')
-    print
+    args = sys.argv
+    del args[0]    
+    go(args)
     
-    #Argument Parsing and Cleaning
-    arguments=cleanArguments(arguments)
-    print("Accepted Arguments:")
-    print(" Process Name: '{0}'".format(arguments["processName"]))
-    print(" Monitor Directory: '{0}'".format(arguments["monitorDir"]))
-    print(" Jobs:")
-    for job in arguments["jobs"]:
-      print("  {0} > {1}".format(job["ID"], job["NAME"]))
-    print(" Events:")
-    for event in arguments["events"]:
-      print("  {0} > {1}".format(event["ID"], event["NAME"]))
-    print
-    
-    #Remove Previous Versions
-    print("Checking for previous versions; handling the Monitor Directory.")
-    cleanSlate(arguments["monitorDir"])
-    print
-    
-    #Standard CSS and JS file creation
-    print("Defining Static CSS and Javascript")
-    staticFiles = defineStaticFiles()
-    print("Writing Static CSS and Javascript")
-    writeCodeToFile(staticFiles["css"], "{0}/monitor.css".format(arguments["monitorDir"]))
-    writeCodeToFile(staticFiles["jquery"], "{0}/jquery.js".format(arguments["monitorDir"]))
-    print
-    
-    #HTML File Creation
-    cleanStringForFilename(arguments["processName"])
-    writeHTML(arguments)
-    print
-    
-    #Json File Creation
-    print("Creating Initial Json Files")
-    for job in arguments["jobs"]:
-      createJson(arguments["monitorDir"], job, arguments["events"])
-    print
-    
-    #Updater Script Creation. 
-    #This fires every time a job has an update for one of its events. See the updaterReadme.txt for more details.
-    writeCodeToFile(getStatusUpdater(arguments["monitorDir"]), "{0}/statusupdate.py".format(arguments["monitorDir"]))
-    os.chmod("{0}/statusupdate.py".format(arguments["monitorDir"]), os.stat("{0}/statusupdate.py".format(arguments["monitorDir"])).st_mode | 0111)
-    
-    #Readme Creation.
-    print("Creating a custom README for your project")
-    readme = createReadme(arguments["monitorDir"], arguments["jobs"], arguments["events"])
-    writeCodeToFile(readme, "{0}/customreadme.txt".format(arguments["monitorDir"]))
-    print("A custom README has been written to {0}/customreadme.txt".format(arguments["monitorDir"]))
-    print
